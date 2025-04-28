@@ -1,66 +1,68 @@
-import { useEffect, useRef, useState } from 'react';
+import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
 
-type CustomSelectorProps = {
-  selected: string;
-  setSelected: (value: string) => void;
+const COLORS = ["blue-500", "yellow-500", "red-500", "black"] as const;
+type Color = (typeof COLORS)[number];
+
+const bg = (c: Color) => `bg-${c}`;
+const hover = (c: Color) =>
+  c === "black" ? "hover:bg-gray-500" : `hover:bg-${c.split("-")[0]}-400`;
+
+type Props = {
+  selected: Color;
+  setSelected: (c: Color) => void;
 };
 
 export default function ColorSelector({
   selected,
   setSelected,
-}: CustomSelectorProps): React.ReactElement {
-  const [open, setOpen] = useState<boolean>(false);
-  const colorOptions = ['blue-500', 'yellow-500', 'red-500', 'black'];
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setOpen(false);
-      }
-    }
-    if (open) {
-      document.addEventListener('keydown', handleKeyDown);
-    } else {
-      document.removeEventListener('keydown', handleKeyDown);
-    }
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
+}: Props): React.ReactElement {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setOpen(false);
-      }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
     }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative inline-block text-left">
+    <div ref={ref} className="relative inline-block text-left">
       <button
-        onClick={() => setOpen(!open)}
-        className={`bg-${selected} rounded-3xl h-15 w-15 flex justify-between items-center text-2xl font-bold cursor-pointer`}
-      ></button>
+        className={clsx(
+          bg(selected),
+          "h-15 w-15 cursor-pointer rounded-full font-bold",
+        )}
+        onClick={() => setOpen((o) => !o)}
+      />
 
       {open && (
-        <div className="absolute mt-3 w-15 font-bold rounded-lg overflow-hidden shadow-lg ">
-          <div>
-            {colorOptions.map((option) => (
-              <button
-                key={option}
-                onClick={() => {
-                  setSelected(option);
-                  setOpen(false);
-                }}
-                className={`bg-${option} block w-full text-left h-10 hover:opacity-50 cursor-pointer`}
-              ></button>
-            ))}
-          </div>
+        <div className="absolute mt-3 w-15 overflow-hidden rounded-lg shadow-lg">
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              onClick={() => {
+                setSelected(c);
+                setOpen(false);
+              }}
+              className={clsx(
+                bg(c),
+                hover(c),
+                "block h-10 w-full cursor-pointer",
+              )}
+            />
+          ))}
         </div>
       )}
     </div>
