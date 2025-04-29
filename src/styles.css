@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 html,
 body,
@@ -8,8 +8,18 @@ body,
 }
 
 * {
-  font-family: 'Archivo', sans-serif;
+  font-family: "Archivo", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
-  font-variation-settings: 'wdth' 100;
+  font-variation-settings: "wdth" 100;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

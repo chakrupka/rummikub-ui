@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import Tile from "./Tile";
 
 type Tiles = (string | number)[][];
@@ -22,6 +22,7 @@ export default function Solved() {
   const { state } = useLocation() as {
     state?: { inRack?: Tiles; inBoard?: Tiles };
   };
+  const navigate = useNavigate();
   const [solution, setSolution] = useState<Record<string, unknown> | null>(
     null,
   );
@@ -36,13 +37,17 @@ export default function Solved() {
     const { inRack, inBoard } = state!;
     (async () => {
       try {
-        const { data } = await axios.post("http://localhost:5000", {
+        const { data } = await axios.post("http://127.0.0.1:5000/", {
           rack: inRack,
           board: inBoard,
         });
-        setSolution(data);
-        console.log(data);
+        if (!data.from_rack || !data.from_rack.length) {
+          setError("No possible move can be made.");
+        } else {
+          setSolution(data);
+        }
       } catch (e) {
+        console.log(e);
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
         setLoading(false);
@@ -51,7 +56,12 @@ export default function Solved() {
   }, [invalid, state]);
 
   if (invalid) return <Navigate to="/" replace />;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (error)
+    return (
+      <p className="flex size-full items-center justify-center bg-gradient-to-b from-[#ffa9a9] to-[rgba(94,94,94,0.95)] text-center text-2xl text-red-900">
+        {error}
+      </p>
+    );
 
   const renderTileSets = (sets: TileTuple[][]) =>
     sets.map((set, si) => (
@@ -63,7 +73,7 @@ export default function Solved() {
     ));
 
   const renderTiles = (tiles: TileTuple[]) => (
-    <div className="flex">
+    <div className="grid grid-cols-5">
       {tiles.map((t, i) => (
         <Tile key={i} {...tupleToProps(t)} interactive={false} />
       ))}
@@ -71,19 +81,29 @@ export default function Solved() {
   );
 
   return (
-    <div className="flex size-full flex-col items-center justify-center bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)]">
+    <div className="flex h-fit min-h-full w-full flex-col items-center gap-5 overflow-hidden bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)] pt-10 pb-10">
       {loading ? (
         <p>Loading…</p>
       ) : (
         <>
-          <h1 className="mb-2 text-2xl font-bold">Optimal play</h1>
-          <div className="flex gap-4">
+          <div className="flex w-full items-center justify-between px-5">
+            <h1 className="text-2xl font-bold">Optimal play</h1>
+            <button
+              onClick={() => navigate("/", { state })}
+              className="rounded bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div className="flex flex-col">
             {solution && renderTileSets(solution.best_play as TileTuple[][])}
           </div>
+
           <h1 className="mt-5 mb-2 text-2xl font-bold">
             Tiles used from your rack
           </h1>
-          <div className="flex gap-2">
+          <div>
             {solution && renderTiles(solution.from_rack as TileTuple[])}
           </div>
         </>

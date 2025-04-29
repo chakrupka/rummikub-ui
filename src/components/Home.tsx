@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ColorSelector from "./ColorSelector";
 import Tile from "./Tile";
@@ -23,6 +23,7 @@ export default function Home() {
     { color: Color; number: string }[]
   >([]);
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const numberOptions = [...Array(13).keys()]
     .map((i) => `${i + 1}`)
@@ -30,6 +31,15 @@ export default function Home() {
 
   const activeTiles = view === "board" ? boardTiles : rackTiles;
   const setActiveTiles = view === "board" ? setBoardTiles : setRackTiles;
+
+  useLayoutEffect(() => {
+    const c = scrollRef.current;
+    if (!c) return;
+    c.scrollTo({
+      left: c.scrollWidth,
+      behavior: "smooth",
+    });
+  }, [activeTiles.length]);
 
   const addTile = () =>
     setActiveTiles((prev) => [
@@ -67,8 +77,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex size-full flex-col items-center gap-5 bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)] pt-10">
-      <h1 className="text-3xl font-bold">
+    <div className="flex h-fit min-h-full w-full flex-col items-center gap-5 overflow-hidden bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)] pt-10 pb-10">
+      <h1 className="text-center text-3xl font-bold">
         Rummikub Optimal Play Solver (ROPS)
       </h1>
       <p className="mb-0">
@@ -98,48 +108,52 @@ export default function Home() {
             key={v}
             onClick={() => setView(v)}
             className={clsx(
-              "w-25 cursor-pointer rounded px-5 py-1 duration-75 ease-in",
-              view === v ? "bg-blue-300 shadow-lg" : "bg-stone-300",
+              "w-25 cursor-pointer rounded px-5 py-2 duration-75 ease-in",
+              view === v ? "bg-blue-300 shadow-lg" : "bg-[#bbbbbb]",
             )}
           >
             {v.charAt(0).toUpperCase() + v.slice(1)}
           </button>
         ))}
       </div>
-
-      <div className="flex items-center justify-center">
-        {activeTiles.map((t, i) => (
-          <Tile
-            key={i}
-            color={t.color}
-            number={t.number}
-            onClick={() => removeTile(i)}
-            interactive={true}
-          />
-        ))}
+      <div
+        ref={scrollRef}
+        className="flex max-w-[90%] justify-start overflow-x-auto overflow-y-hidden scroll-smooth pb-3"
+      >
+        <div className="relative z-10 -mb-3 flex items-center pb-3">
+          {activeTiles.map((t, i) => (
+            <Tile
+              key={i}
+              color={t.color}
+              number={t.number}
+              onClick={() => removeTile(i)}
+              interactive
+            />
+          ))}
+        </div>
         {activeTiles.length === 0 && <div className="h-29.5"></div>}
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center pb-15 text-3xl text-gray-500 md:pb-[30%] lg:pb-[30%]">
+          {view.toUpperCase()} TILES
+        </span>
       </div>
-
       <div className="ml-5 flex items-center justify-center gap-3">
         <div className="flex flex-col items-center gap-3">
           <ColorSelector selected={editColor} setSelected={setEditColor} />
           <p className="text-center">Change color</p>
         </div>
-
         <Tile
           color={editColor}
           number={editNumber}
           onClick={addTile}
           interactive={true}
         />
-
         <div className="flex flex-col items-center gap-3">
           <label>
             <select
               value={editNumber}
               onChange={(e) => setEditNumber(e.target.value)}
               className={clsx(
-                "font--500 cursor-pointer rounded border-3 p-2 text-2xl",
+                "cursor-pointer rounded border-3 p-2 text-2xl",
                 borderText(editColor),
               )}
             >
@@ -153,9 +167,7 @@ export default function Home() {
           <p className="-mb-2 pt-1 text-center">Change number</p>
         </div>
       </div>
-
       <p className="-mt-2">Click the tile to add it to the list</p>
-
       <div className="flex gap-2">
         <button
           className="mt-2 cursor-pointer rounded bg-red-400 px-5 py-2 text-2xl text-black shadow duration-200 ease-out hover:bg-red-600"
@@ -170,16 +182,15 @@ export default function Home() {
           Solve
         </button>
       </div>
-
       <h2 className="mt-5 text-2xl underline">Instructions</h2>
-      <p className="max-w-[30%] text-center">
+      <p className="w-[80%] max-w-[600] text-center">
         Enter the tiles on the board and in your rack. The solver will return
         the best possible move (most tiles used).
       </p>
-      <p className="max-w-[30%] text-center">
+      <p className="w-[80%] max-w-[600] text-center">
         Click on any tile in the list to remove it.
       </p>
-      <p className="max-w-[30%] text-center">
+      <p className="w-[80%] max-w-[600] text-center">
         Switch between board tiles and rack tiles with the buttons above.
       </p>
     </div>
