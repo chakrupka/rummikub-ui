@@ -42,7 +42,6 @@ export default function Home() {
   const [view, setView] = useState<"board" | "rack">("board");
   const [editColor, setEditColor] = useState<Color>("blue-500");
   const [editNumber, setEditNumber] = useState("1");
-  // ← seed these from navState if present
   const [boardTiles, setBoardTiles] =
     useState<{ color: Color; number: string }[]>(initialBoard);
   const [rackTiles, setRackTiles] =
