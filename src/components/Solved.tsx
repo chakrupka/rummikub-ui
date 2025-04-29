@@ -37,7 +37,7 @@ export default function Solved() {
     const { inRack, inBoard } = state!;
     (async () => {
       try {
-        const { data } = await axios.post("http://127.0.0.1:5000/", {
+        const { data } = await axios.post("https://rummikub.onrender.com", {
           rack: inRack,
           board: inBoard,
         });
@@ -86,11 +86,11 @@ export default function Solved() {
         <p>Loading…</p>
       ) : (
         <>
-          <div className="flex w-full items-center justify-between px-5">
+          <div className="flex w-full items-center justify-center px-5">
             <h1 className="text-2xl font-bold">Optimal play</h1>
             <button
               onClick={() => navigate("/", { state })}
-              className="rounded bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+              className="absolute top-5 left-5 cursor-pointer rounded bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-300"
             >
               ← Back
             </button>

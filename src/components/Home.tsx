@@ -1,10 +1,11 @@
 import clsx from "clsx";
 import { useLayoutEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ColorSelector from "./ColorSelector";
 import Tile from "./Tile";
 
 type Color = "blue-500" | "yellow-500" | "red-500" | "black";
+type Tiles = (string | number)[][];
 
 const borderText = (c: Color) =>
   clsx(
@@ -13,18 +14,41 @@ const borderText = (c: Color) =>
   );
 
 export default function Home() {
+  const navigate = useNavigate();
+
+  const { state: navState } = useLocation() as {
+    state?: { inRack?: Tiles; inBoard?: Tiles };
+  };
+
+  const REVERSE_COLOR: Record<"B" | "O" | "R" | "K", Color> = {
+    B: "blue-500",
+    O: "yellow-500",
+    R: "red-500",
+    K: "black",
+  };
+
+  const initialBoard =
+    navState?.inBoard?.map(([c, n]) => ({
+      color: REVERSE_COLOR[c as "B" | "O" | "R" | "K"],
+      number: n === 0 ? "J" : String(n),
+    })) ?? [];
+
+  const initialRack =
+    navState?.inRack?.map(([c, n]) => ({
+      color: REVERSE_COLOR[c as "B" | "O" | "R" | "K"],
+      number: n === 0 ? "J" : String(n),
+    })) ?? [];
+
   const [view, setView] = useState<"board" | "rack">("board");
   const [editColor, setEditColor] = useState<Color>("blue-500");
   const [editNumber, setEditNumber] = useState("1");
-  const [boardTiles, setBoardTiles] = useState<
-    { color: Color; number: string }[]
-  >([]);
-  const [rackTiles, setRackTiles] = useState<
-    { color: Color; number: string }[]
-  >([]);
-  const navigate = useNavigate();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // ← seed these from navState if present
+  const [boardTiles, setBoardTiles] =
+    useState<{ color: Color; number: string }[]>(initialBoard);
+  const [rackTiles, setRackTiles] =
+    useState<{ color: Color; number: string }[]>(initialRack);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
   const numberOptions = [...Array(13).keys()]
     .map((i) => `${i + 1}`)
     .concat("J");
@@ -35,10 +59,7 @@ export default function Home() {
   useLayoutEffect(() => {
     const c = scrollRef.current;
     if (!c) return;
-    c.scrollTo({
-      left: c.scrollWidth,
-      behavior: "smooth",
-    });
+    c.scrollTo({ left: c.scrollWidth, behavior: "smooth" });
   }, [activeTiles.length]);
 
   const addTile = () =>
@@ -46,7 +67,6 @@ export default function Home() {
       ...prev,
       { color: editColor, number: editNumber },
     ]);
-
   const removeTile = (index: number) =>
     setActiveTiles((prev) => prev.filter((_, i) => i !== index));
 
@@ -55,7 +75,6 @@ export default function Home() {
       window.alert("Your rack must have at least three tiles");
       return;
     }
-
     const colorMap = {
       "blue-500": "B",
       "yellow-500": "O",
@@ -72,7 +91,6 @@ export default function Home() {
       t.number === "J" ? 0 : parseInt(t.number, 10),
     ]);
 
-    console.log("@Home:", { inRack, inBoard });
     navigate("/solved", { state: { inRack, inBoard } });
   };
 
@@ -145,25 +163,23 @@ export default function Home() {
           color={editColor}
           number={editNumber}
           onClick={addTile}
-          interactive={true}
+          interactive
         />
         <div className="flex flex-col items-center gap-3">
-          <label>
-            <select
-              value={editNumber}
-              onChange={(e) => setEditNumber(e.target.value)}
-              className={clsx(
-                "cursor-pointer rounded border-3 p-2 text-2xl",
-                borderText(editColor),
-              )}
-            >
-              {numberOptions.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            value={editNumber}
+            onChange={(e) => setEditNumber(e.target.value)}
+            className={clsx(
+              "cursor-pointer rounded border-3 p-2 text-2xl",
+              borderText(editColor),
+            )}
+          >
+            {numberOptions.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
           <p className="-mb-2 pt-1 text-center">Change number</p>
         </div>
       </div>
