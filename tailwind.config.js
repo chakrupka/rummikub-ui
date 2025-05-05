@@ -15,6 +15,7 @@ module.exports = {
     "text-yellow-500",
     "text-red-500",
     "text-black",
+    { pattern: /^top-\[\d+px\]$/ },
   ],
   theme: { extend: {} },
   plugins: [],

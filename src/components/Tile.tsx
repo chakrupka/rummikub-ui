@@ -1,10 +1,16 @@
 import clsx from "clsx";
 import React from "react";
+import { StyleColor, TileColor } from "../types/types";
 
-type Color = "blue-500" | "yellow-500" | "red-500" | "black";
+const REVERSE_COLOR: Record<TileColor, StyleColor> = {
+  B: "blue-500",
+  O: "yellow-500",
+  R: "red-500",
+  K: "black",
+};
 
 type TileProps = {
-  color: Color;
+  color: TileColor;
   number: string;
   interactive: boolean;
   onClick?: () => void;
@@ -20,12 +26,17 @@ export default function Tile({
     <button
       onClick={onClick}
       className={clsx(
-        "m-0.75 flex h-28 w-17 justify-center rounded-sm border-3 border-amber-200 bg-amber-100 text-3xl font-extrabold shadow-sm duration-200 ease-out",
+        "flex h-22 w-14 justify-center rounded-sm border-3 border-amber-200 bg-amber-100 text-2xl font-extrabold shadow-sm duration-200 ease-out",
         `${interactive ? "cursor-pointer hover:scale-105" : ""}`,
       )}
     >
-      <div className="mt-1 flex h-16 w-16 items-center justify-center rounded-full shadow-[inset_5px_5px_4px_4px_rgba(0,0,0,0.05)]">
-        <span className={clsx("scale-y-130 pt-1", `text-${color}`)}>
+      <div className="mt-2 flex h-10 w-10 items-center justify-center rounded-full shadow-[inset_6px_5px_8px_2px_rgba(0,0,0,0.05)]">
+        <span
+          className={clsx(
+            "scale-y-130 pl-0.5 text-xl select-none",
+            `text-${REVERSE_COLOR[color]}`,
+          )}
+        >
           {number}
         </span>
       </div>
