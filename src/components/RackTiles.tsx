@@ -95,10 +95,8 @@ export default function RackTiles({ rackTiles, setRackTiles }: RackTileProps) {
         )}
       </div>
 
-      <div className="my-2 flex items-center justify-center gap-10">
-        <div className="flex flex-col items-center gap-3">
-          <ColorSelector selected={editColor} setSelected={setEditColor} />
-        </div>
+      <div className="my-2 ml-5 flex items-center justify-center gap-5 sm:ml-0 sm:gap-6">
+        <ColorSelector selected={editColor} setSelected={setEditColor} />
 
         <Draggable
           nodeRef={dragRef}
@@ -116,7 +114,7 @@ export default function RackTiles({ rackTiles, setRackTiles }: RackTileProps) {
             value={editNumber}
             onChange={(e) => setEditNumber(e.target.value)}
             className={clsx(
-              "w-13 cursor-pointer rounded border-3 py-1 pl-2 text-center text-xl sm:pl-0",
+              "w-17 cursor-pointer rounded border-3 py-1 pl-2 text-center text-xl sm:ml-0 sm:w-13 sm:pl-0",
               borderText(REVERSE_COLOR[editColor]),
             )}
           >
@@ -128,6 +126,7 @@ export default function RackTiles({ rackTiles, setRackTiles }: RackTileProps) {
           </select>
         </div>
       </div>
+
       <button
         className="text-md flex w-52 cursor-pointer items-center justify-center rounded bg-red-300 py-2 shadow-sm duration-200 ease-out hover:bg-red-400"
         onClick={handleClearCurrent}
