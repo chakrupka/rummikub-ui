@@ -1,103 +1,29 @@
 import clsx from "clsx";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import ColorSelector from "./ColorSelector";
-import Tile from "./Tile";
-
-type Color = "blue-500" | "yellow-500" | "red-500" | "black";
-type Tiles = (string | number)[][];
-
-const borderText = (c: Color) =>
-  clsx(
-    c === "black" ? "border-black" : `border-${c}`,
-    c === "black" ? "text-black" : `text-${c}`,
-  );
+import { TileDataList, TileDataSets } from "../types/types";
+import BoardSets from "./BoardSets";
+import RackTiles from "./RackTiles";
 
 export default function Home() {
   const navigate = useNavigate();
-
   const { state: navState } = useLocation() as {
-    state?: { inRack?: Tiles; inBoard?: Tiles };
+    state?: { boardSets?: TileDataSets; rackTiles?: TileDataList };
   };
-
-  const REVERSE_COLOR: Record<"B" | "O" | "R" | "K", Color> = {
-    B: "blue-500",
-    O: "yellow-500",
-    R: "red-500",
-    K: "black",
-  };
-
-  const initialBoard =
-    navState?.inBoard?.map(([c, n]) => ({
-      color: REVERSE_COLOR[c as "B" | "O" | "R" | "K"],
-      number: n === 0 ? "J" : String(n),
-    })) ?? [];
-
-  const initialRack =
-    navState?.inRack?.map(([c, n]) => ({
-      color: REVERSE_COLOR[c as "B" | "O" | "R" | "K"],
-      number: n === 0 ? "J" : String(n),
-    })) ?? [];
-
-  const [view, setView] = useState<"board" | "rack">("board");
-  const [editColor, setEditColor] = useState<Color>("blue-500");
-  const [editNumber, setEditNumber] = useState("1");
-  const [boardTiles, setBoardTiles] =
-    useState<{ color: Color; number: string }[]>(initialBoard);
-  const [rackTiles, setRackTiles] =
-    useState<{ color: Color; number: string }[]>(initialRack);
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const numberOptions = [...Array(13).keys()]
-    .map((i) => `${i + 1}`)
-    .concat("J");
-
-  const activeTiles = view === "board" ? boardTiles : rackTiles;
-  const setActiveTiles = view === "board" ? setBoardTiles : setRackTiles;
-
-  useLayoutEffect(() => {
-    const c = scrollRef.current;
-    if (!c) return;
-    c.scrollTo({ left: c.scrollWidth, behavior: "smooth" });
-  }, [activeTiles.length]);
-
-  const addTile = () =>
-    setActiveTiles((prev) => [
-      ...prev,
-      { color: editColor, number: editNumber },
-    ]);
-  const removeTile = (index: number) =>
-    setActiveTiles((prev) => prev.filter((_, i) => i !== index));
-
-  const handleSolve = () => {
-    if (rackTiles.length < 3) {
-      window.alert("Your rack must have at least three tiles");
-      return;
-    }
-    const colorMap = {
-      "blue-500": "B",
-      "yellow-500": "O",
-      "red-500": "R",
-      black: "K",
-    } as const;
-
-    const inRack = rackTiles.map((t) => [
-      colorMap[t.color],
-      t.number === "J" ? 0 : parseInt(t.number, 10),
-    ]);
-    const inBoard = boardTiles.map((t) => [
-      colorMap[t.color],
-      t.number === "J" ? 0 : parseInt(t.number, 10),
-    ]);
-
-    navigate("/solved", { state: { inRack, inBoard } });
-  };
+  const [viewingSets, setViewingSets] = useState(true);
+  const [boardSets, setBoardSets] = useState<TileDataSets>(
+    navState?.boardSets ?? [[]],
+  );
+  const [rackTiles, setRackTiles] = useState<TileDataList>(
+    navState?.rackTiles ?? [],
+  );
 
   return (
-    <div className="flex h-fit min-h-full w-full flex-col items-center gap-5 overflow-hidden bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)] pt-10 pb-10">
+    <div className="flex h-fit min-h-full w-full flex-col items-center justify-start gap-2 overflow-hidden bg-gradient-to-b from-[#9c9c9c] to-[rgba(215,150,255,0.95)] pt-10 pb-10">
       <h1 className="text-center text-3xl font-bold">
         Rummikub Optimal Play Solver (ROPS)
       </h1>
+
       <p className="mb-0">
         Made with ❤️ by{" "}
         <a
@@ -119,85 +45,50 @@ export default function Home() {
         </a>
         )
       </p>
-      <div className="mb-1 flex gap-3">
-        {(["board", "rack"] as const).map((v) => (
+
+      <div>
+        <div className="flex items-center justify-center gap-2">
           <button
-            key={v}
-            onClick={() => setView(v)}
             className={clsx(
-              "w-25 cursor-pointer rounded px-5 py-2 duration-75 ease-in",
-              view === v ? "bg-blue-300 shadow-lg" : "bg-[#bbbbbb]",
+              "w-25 cursor-pointer rounded px-5 py-2 duration-75 ease-out",
+              viewingSets ? "bg-purple-300 shadow-sm" : "bg-[#bbbbbb]",
             )}
+            onClick={() => setViewingSets(true)}
           >
-            {v.charAt(0).toUpperCase() + v.slice(1)}
+            Board
           </button>
-        ))}
-      </div>
-      <div
-        ref={scrollRef}
-        className="flex max-w-[90%] justify-start overflow-x-auto overflow-y-hidden scroll-smooth pb-3"
-      >
-        <div className="relative z-10 -mb-3 flex items-center pb-3">
-          {activeTiles.map((t, i) => (
-            <Tile
-              key={i}
-              color={t.color}
-              number={t.number}
-              onClick={() => removeTile(i)}
-              interactive
-            />
-          ))}
-        </div>
-        {activeTiles.length === 0 && <div className="h-29.5"></div>}
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center pb-15 text-3xl text-gray-500 md:pb-[30%] lg:pb-[30%]">
-          {view.toUpperCase()} TILES
-        </span>
-      </div>
-      <div className="ml-5 flex items-center justify-center gap-3">
-        <div className="flex flex-col items-center gap-3">
-          <ColorSelector selected={editColor} setSelected={setEditColor} />
-          <p className="text-center">Change color</p>
-        </div>
-        <Tile
-          color={editColor}
-          number={editNumber}
-          onClick={addTile}
-          interactive
-        />
-        <div className="flex flex-col items-center gap-3">
-          <select
-            value={editNumber}
-            onChange={(e) => setEditNumber(e.target.value)}
+          <button
             className={clsx(
-              "cursor-pointer rounded border-3 p-2 text-2xl",
-              borderText(editColor),
+              "w-25 cursor-pointer rounded px-5 py-2 duration-75 ease-out",
+              !viewingSets ? "bg-purple-300 shadow-sm" : "bg-[#bbbbbb]",
             )}
+            onClick={() => setViewingSets(false)}
           >
-            {numberOptions.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-          <p className="-mb-2 pt-1 text-center">Change number</p>
+            Tiles
+          </button>
         </div>
       </div>
-      <p className="-mt-2">Click the tile to add it to the list</p>
-      <div className="flex gap-2">
-        <button
-          className="mt-2 cursor-pointer rounded bg-red-400 px-5 py-2 text-2xl text-black shadow duration-200 ease-out hover:bg-red-600"
-          onClick={() => setActiveTiles([])}
-        >
-          Clear
-        </button>
-        <button
-          className="mt-2 cursor-pointer rounded bg-white px-5 py-2 text-2xl text-black shadow duration-200 ease-out hover:bg-green-400"
-          onClick={handleSolve}
-        >
-          Solve
-        </button>
-      </div>
-      <h2 className="mt-5 text-2xl underline">Instructions</h2>
+
+      {viewingSets && (
+        <BoardSets boardSets={boardSets} setBoardSets={setBoardSets} />
+      )}
+      {!viewingSets && (
+        <RackTiles rackTiles={rackTiles} setRackTiles={setRackTiles} />
+      )}
+
+      <button
+        className={clsx(
+          "w-52 rounded px-5 py-2 text-black shadow duration-200 ease-out",
+          rackTiles.length >= 1 || boardSets[0]?.length >= 3
+            ? "cursor-pointer bg-green-200 hover:bg-green-400"
+            : "pointer-events-none bg-gray-300 text-gray-400",
+        )}
+        onClick={() => navigate("/solved", { state: { boardSets, rackTiles } })}
+      >
+        Solve
+      </button>
+
+      <h2 className="mt-10 text-2xl underline">Instructions</h2>
       <p className="w-[80%] max-w-[600] text-center">
         Enter the tiles on the board and in your rack. The solver will return
         the best possible move (most tiles used).
