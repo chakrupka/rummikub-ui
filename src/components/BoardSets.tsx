@@ -151,7 +151,7 @@ export default function BoardSets({ boardSets, setBoardSets }: BoardSetsProps) {
           </div>
         ))}
       </div>
-      <div className="my-2 ml-5 flex items-center justify-center gap-5 sm:ml-0 sm:gap-6">
+      <div className="my-2 ml-4 flex items-center justify-center gap-5 sm:ml-0 sm:gap-6">
         <ColorSelector selected={editColor} setSelected={setEditColor} />
 
         <Draggable

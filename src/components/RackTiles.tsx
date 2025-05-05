@@ -95,7 +95,7 @@ export default function RackTiles({ rackTiles, setRackTiles }: RackTileProps) {
         )}
       </div>
 
-      <div className="my-2 ml-5 flex items-center justify-center gap-5 sm:ml-0 sm:gap-6">
+      <div className="my-2 ml-4 flex items-center justify-center gap-5 sm:ml-0 sm:gap-6">
         <ColorSelector selected={editColor} setSelected={setEditColor} />
 
         <Draggable
