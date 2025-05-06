@@ -51,7 +51,7 @@ export default function Solved() {
   if (invalid) return <Navigate to="/" replace />;
   if (error)
     return (
-      <p className="flex size-full items-center justify-center bg-gradient-to-b from-[#ffa9a9] to-[rgba(94,94,94,0.95)] text-center text-2xl text-red-900">
+      <p className="flex size-full items-center justify-center bg-gradient-to-b from-[rgba(94,94,94,0.95)] to-[#ffa9a9] text-center text-2xl text-red-900">
         {error}
       </p>
     );
