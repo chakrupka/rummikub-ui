@@ -64,7 +64,7 @@ export default function Home() {
             )}
             onClick={() => setViewingSets(false)}
           >
-            Tiles
+            Rack
           </button>
         </div>
       </div>
