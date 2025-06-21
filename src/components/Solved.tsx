@@ -51,9 +51,17 @@ export default function Solved() {
   if (invalid) return <Navigate to="/" replace />;
   if (error)
     return (
-      <p className="flex size-full items-center justify-center bg-gradient-to-b from-[rgba(94,94,94,0.95)] to-[#ffa9a9] text-center text-2xl text-red-900">
-        {error}
-      </p>
+      <>
+        <button
+          onClick={() => navigate("/", { state })}
+          className="absolute top-5 left-5 cursor-pointer rounded bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-300"
+        >
+          ← Back
+        </button>
+        <p className="flex size-full items-center justify-center bg-gradient-to-b from-[rgba(94,94,94,0.95)] to-[#ffa9a9] text-center text-2xl text-red-900">
+          {error}
+        </p>
+      </>
     );
 
   const tileComparator = (
